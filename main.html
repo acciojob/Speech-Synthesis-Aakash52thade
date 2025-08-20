@@ -3,41 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <title>Speech Synthesis</title>
-  <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet' type='text/css'>
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css?family=Pacifico" rel="stylesheet" type="text/css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .voiceinator {
+      max-width: 400px;
+      margin: auto;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+    }
+    h1 {
+      font-family: 'Pacifico', cursive;
+      text-align: center;
+    }
+    textarea {
+      width: 100%;
+      height: 100px;
+      margin: 10px 0;
+    }
+    button {
+      margin-right: 10px;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+  </style>
 </head>
 <body>
+  <div class="voiceinator">
+    <h1>The Voiceinator 5000</h1>
 
-    <div class="voiceinator">
+    <label for="voices">Voice:</label>
+    <select name="voice" id="voices">
+      <option value="">Select A Voice</option>
+    </select>
 
-      <h1>The Voiceinator 5000</h1>
+    <label for="rate">Rate:</label>
+    <input name="rate" type="range" min="0" max="3" value="1" step="0.1">
 
-      <select name="voice" id="voices">
-        <option value="">Select A Voice</option>
-      </select>
+    <label for="pitch">Pitch:</label>
+    <input name="pitch" type="range" min="0" max="2" step="0.1">
 
-      <label for="rate">Rate:</label>
-      <input name="rate" type="range" min="0" max="3" value="1" step="0.1">
+    <textarea name="text">Hello! I love JavaScript 👍</textarea>
+    <br>
+    <button id="speak">Speak</button>
+    <button id="stop">Stop</button>
+  </div>
 
-      <label for="pitch">Pitch:</label>
+  <script>
+    const msg = new SpeechSynthesisUtterance();
+    let voices = [];
 
-      <input name="pitch" type="range" min="0" max="2" step="0.1">
-      <textarea name="text">Hello! I love JavaScript 👍</textarea>
-      <button id="stop">Stop!</button>
-      <button id="speak">Speak</button>
+    const voicesDropdown = document.querySelector('[name="voice"]');
+    const options = document.querySelectorAll('[type="range"], [name="text"]');
+    const speakButton = document.querySelector('#speak');
+    const stopButton = document.querySelector('#stop');
 
-    </div>
+    // Load available voices into dropdown
+    function populateVoices() {
+      voices = speechSynthesis.getVoices();
+      voicesDropdown.innerHTML = voices
+        .map(voice => `<option value="${voice.name}">${voice.name} (${voice.lang})</option>`)
+        .join('');
+    }
 
-<script>
-  const msg = new SpeechSynthesisUtterance();
-  let voices = [];
-  const voicesDropdown = document.querySelector('[name="voice"]');
-  const options = document.querySelectorAll('[type="range"], [name="text"]');
-  const speakButton = document.querySelector('#speak');
-  const stopButton = document.querySelector('#stop');
+    // Set voice when user selects one
+    function setVoice() {
+      msg.voice = voices.find(voice => voice.name === this.value);
+    }
 
-  //Your code goes here
-</script>
+    // Update pitch, rate, or text
+    function setOption() {
+      msg[this.name] = this.value;
+    }
 
+    // Start speaking
+    function startSpeech() {
+      msg.text = document.querySelector('[name="text"]').value;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(msg);
+    }
+
+    // Stop speaking
+    function stopSpeech() {
+      speechSynthesis.cancel();
+    }
+
+    // Event listeners
+    speechSynthesis.addEventListener('voiceschanged', populateVoices);
+    voicesDropdown.addEventListener('change', setVoice);
+    options.forEach(option => option.addEventListener('input', setOption));
+    speakButton.addEventListener('click', startSpeech);
+    stopButton.addEventListener('click', stopSpeech);
+
+    // Try populate immediately
+    populateVoices();
+  </script>
 </body>
 </html>
